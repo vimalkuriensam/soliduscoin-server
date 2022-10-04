@@ -5,7 +5,7 @@ var sql = require("mssql");
 
 const app = express();
 app.use(cors());
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 // config for your database
 const config = {
