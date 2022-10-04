@@ -1,6 +1,7 @@
-const cors = require("cors");
 const express = require("express");
+const cors = require("cors");
 var sql = require("mssql");
+// const { stringify } = require('nodemon/lib/utils');
 
 const app = express();
 app.use(cors());
