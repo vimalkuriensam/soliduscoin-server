@@ -1,10 +1,10 @@
-const cors = require('cors');
+const cors = require("cors");
 const express = require("express");
 var sql = require("mssql");
 
 const app = express();
 app.use(cors());
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 // config for your database
 const config = {
@@ -129,15 +129,15 @@ app.get("/api/users/:userid", async (req, res) => {
       `select isnull(sum(amount),0) as withdrawal FROM Statementigc where type='Debit' and Userid='${userid}' and Mode='Withdrawal'`,
     ];
     const resp = await Promise.all(stmts.map((stmt) => sql.query(stmt)));
-      res.send({
-        regDate: resp[0].recordsets[0][0],
-        investment: resp[1].recordsets[0][0],
-        levelincome: resp[2].recordsets[0][0],
-        divedendincome: resp[3].recordsets[0][0],
-        roiincome: resp[4].recordsets[0][0],
-        withdrawalfailed: resp[5].recordsets[0][0],
-        withdrawal: resp[6].recordsets[0][0],
-      })
+    res.send({
+      regDate: resp[0].recordsets[0][0],
+      investment: resp[1].recordsets[0][0],
+      levelincome: resp[2].recordsets[0][0],
+      divedendincome: resp[3].recordsets[0][0],
+      roiincome: resp[4].recordsets[0][0],
+      withdrawalfailed: resp[5].recordsets[0][0],
+      withdrawal: resp[6].recordsets[0][0],
+    });
   } catch (e) {
     console.log(e.message);
   }
