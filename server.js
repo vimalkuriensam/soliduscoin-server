@@ -4,7 +4,7 @@ var sql = require("mssql");
 
 const app = express();
 app.use(cors());
-const port = process.env.PORT || 8000;
+const port = 8000;
 
 // config for your database
 const config = {
@@ -45,7 +45,7 @@ app.get("/api/signin/:address", async (req, res) => {
   var address = req.params.address;
   var request = new sql.Request();
   request.query(
-    "select Userid as userid FROM myuser where Address ='" + address + "'",
+    "select Userid as userid FROM myuser where bnbaddress ='" + address + "'",
     (err, data) => {
       if (err) {
         obj.userid = err;
@@ -110,6 +110,43 @@ app.get("/api/balance/:userid", (req, res) => {
       res.send(bal);
     }
   );
+});
+
+app.get("/api/sponsorid/:id/:addr", async (req, res) => {
+  try {
+    const sponsorId = req.params.id;
+    const address = req.params.addr;
+    if (!id.length) throw { message: "Id not provided" };
+    await sql.connect(
+      `Server=${config.server};Database=${config.database};User Id=${config.user};Password=${config.password};Encrypt=${config.encrypt}`
+    );
+    const stmt = `select Userid from myuser where Userid = '${sponsorId}'`;
+    const stmt2 = `select Userid as userid FROM myuser where bnbaddress ='${address}'`;
+    const stmt3 = (num) => `select Userid from myuser where Userid ='${num}'`;
+    const { recordset } = await sql.query(stmt);
+    if (recordset.length) {
+      const response = await sql.query(stmt2);
+      if (!response.recordset.length) {
+        let randomNum = Math.floor(Math.random() * 899999 + 100000);
+        while (true) {
+          const { recordset } = await sql.query(stmt3(`SUL${randomNum}`));
+          if (!recordset.length) {
+            const resp = await queryDb(
+              `[sp_RegisterUser]'SUL${randomNum}','${sponsorId}','${address}'`
+            );
+            console.log(resp);
+            return res.send({ isRegistered: true });
+          }
+          randomNum = Math.floor(Math.random() * 899999 + 100000);
+        }
+      }
+      return res.send({ isValid: true });
+    }
+    return res.send({ isValid: false });
+  } catch (e) {
+    console.log(e.message);
+    res.status(500).send({ message: e.message });
+  }
 });
 
 app.get("/api/users/:userid", async (req, res) => {
@@ -249,7 +286,7 @@ app.get("/api/roiincome/:userid", async (req, res) => {
     req.setTimeout(25000);
     const userid = req.params.userid;
     const request = new sql.Request();
-    const data = await queryDb(`[sp_Get_Team]'${userid}'`);
+    const data = await queryDb(`[sp_RoiIncome]'${userid}'`);
     obj.roiincome = data["recordsets"];
     res.send({ roiincome: data["recordsets"] });
   } catch (e) {
