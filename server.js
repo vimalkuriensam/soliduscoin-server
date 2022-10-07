@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 var sql = require("mssql");
-// const { stringify } = require('nodemon/lib/utils');
 
 const app = express();
 app.use(cors());
@@ -37,6 +36,8 @@ const queryDb = async (sqlquery) => {
 };
 
 var obj = {};
+var obj2 = {};
+var obj3 = {};
 
 app.listen(port, () => {
   console.log(`App server now listening to port ${port}`);
@@ -45,15 +46,16 @@ app.listen(port, () => {
 app.get("/api/signin/:address", async (req, res) => {
   var address = req.params.address;
   var request = new sql.Request();
+  var obb = {};
   request.query(
     "select Userid as userid FROM myuser where bnbaddress ='" + address + "'",
     (err, data) => {
       if (err) {
-        obj.userid = err;
+        obb.usr = err;
       } else {
-        obj.userid = data;
+        obb.usr = data;
       }
-      res.send({ obj });
+      res.send({ obb });
     }
   );
 });
@@ -113,11 +115,24 @@ app.get("/api/balance/:userid", (req, res) => {
   );
 });
 
+// app.get("/api/checkcondition/:userid/:condition", async (req, res) => {
+//   try {
+//     const { userid, condition } = req.params;
+//     var request = new sql.Request();
+//     var bal = {};
+//     const query = `select Count(Userid) FROM checkcondition where Userid='${userid}' and ${condition}='1'`;
+//     const response = await request.query(query);
+//     res.send({ count: response.recordset.length });
+//   } catch (e) {
+//     res.status(500).send({ error: e.message });
+//   }
+// });
+
 app.get("/api/sponsorid/:id/:addr", async (req, res) => {
   try {
     const sponsorId = req.params.id;
     const address = req.params.addr;
-    if (!id.length) throw { message: "Id not provided" };
+    if (!sponsorId.length) throw { message: "Id not provided" };
     await sql.connect(
       `Server=${config.server};Database=${config.database};User Id=${config.user};Password=${config.password};Encrypt=${config.encrypt}`
     );
@@ -203,14 +218,14 @@ app.get("/api/totalbussiness/:userid", async (req, res) => {
 
   await queryDb("[sp_getbusinesstotaluser]'" + userid + "'")
     .then((result) => {
-      obj.totalbussiness = result;
+      obj2.totalbussiness = result;
     })
     .catch((err) => {
       pool.close;
       sql.close;
-      obj.totalbussiness = err;
+      obj2.totalbussiness = err;
     });
-  res.send(obj);
+  res.send(obj2);
 });
 
 ////today income
@@ -220,14 +235,14 @@ app.get("/api/todayincome/:userid", async (req, res) => {
 
   await queryDb("[sp_Today_Income]'" + userid + "'")
     .then((result) => {
-      obj.todayincome = result;
+      obj3.todayincome = result;
     })
     .catch((err) => {
       pool.close;
       sql.close;
-      obj.todayincome = err;
+      obj3.todayincome = err;
     });
-  res.send(obj);
+  res.send(obj3);
 });
 
 ////Statement
@@ -261,6 +276,43 @@ app.get("/api/divedendincome/:userid", async (req, res) => {
     pool.close;
     sql.close;
     obj.Divedendincome = err;
+  }
+});
+
+/////Divedend Income Statement
+app.get("/api/Withdrawal/:userid/:amount", async (req, res) => {
+  try {
+    req.setTimeout(25000);
+    const userid = req.params.userid;
+    const amount = req.params.amount;
+    const request = new sql.Request();
+    const data = await queryDb(`[sp_Withdrawal]'${userid}','${amount}'`);
+    obj.withdrawal = data["recordsets"];
+    res.send({ withdrawal: data["recordsets"] });
+  } catch (e) {
+    console.log(e.message);
+    pool.close;
+    sql.close;
+    obj.withdrawal = err;
+  }
+});
+
+/////ID Activatition
+app.get("/api/idactivated/:userid/:amount/:txn/:addr", async (req, res) => {
+  try {
+    req.setTimeout(25000);
+    const { userid, amount, txn, addr } = req.params;
+    const request = new sql.Request();
+    const data = await queryDb(
+      `[sp_PackagePurchase]'${userid}','${amount}','${txn}','${addr}'`
+    );
+    obj.Divedendincome = data["recordsets"];
+    res.send({ idactivated: data["recordsets"] });
+  } catch (e) {
+    console.log(e.message);
+    pool.close;
+    sql.close;
+    obj.idactivated = err;
   }
 });
 
