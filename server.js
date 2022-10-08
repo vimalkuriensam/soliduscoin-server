@@ -1,9 +1,6 @@
-const { id } = require("ethers/lib/utils");
 const express = require("express");
 const cors = require("cors");
 var sql = require("mssql");
-const { DBQuery } = require("./dbQuery");
-// const { stringify } = require('nodemon/lib/utils');
 
 const app = express();
 app.use(cors());
@@ -47,21 +44,19 @@ app.listen(port, () => {
 });
 
 app.get("/api/signin/:address", async (req, res) => {
-  var address = req.params.address;
-  var request = new sql.Request();
-  var obb = {};
-  request.query(
-    "select userid FROM myuser where bnbaddress ='" + address + "'",
-    (err, data) => {
-      if (err) {
-        obb.usr = err;
-      } else {
-        obb.usr = data;
-      }
-      res.send({ obb });
-    }
-  );
+  try {
+    const address = req.params.address;
+    const request = new sql.Request();
+    const queryStmt = `select userid FROM myuser where bnbaddress ='${address}'`;
+    const { recordset } = await request.query(queryStmt);
+    if (!recordset.length) res.send({ userid: "" });
+    res.send({ userid: recordset[0].userid });
+  } catch (e) {
+    console.log(e.message);
+    res.status(500).send({ error: e.message });
+  }
 });
+
 app.get("/api/logout", async (req, res) => {
   console.log("hello gays my logout page");
 
