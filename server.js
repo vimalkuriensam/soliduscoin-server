@@ -1,6 +1,9 @@
+const { id } = require("ethers/lib/utils");
 const express = require("express");
 const cors = require("cors");
 var sql = require("mssql");
+const { DBQuery } = require("./dbQuery");
+// const { stringify } = require('nodemon/lib/utils');
 
 const app = express();
 app.use(cors());
@@ -48,7 +51,7 @@ app.get("/api/signin/:address", async (req, res) => {
   var request = new sql.Request();
   var obb = {};
   request.query(
-    "select Userid as userid FROM myuser where bnbaddress ='" + address + "'",
+    "select userid FROM myuser where bnbaddress ='" + address + "'",
     (err, data) => {
       if (err) {
         obb.usr = err;
