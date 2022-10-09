@@ -367,16 +367,18 @@ app.get("/api/Team/:userid", async (req, res) => {
 app.get("/api/DirectTeam/:userid", async (req, res) => {
   try {
     req.setTimeout(25000);
-    const userid = req.params.userid;
-    const request = new sql.Request();
-    const data = await queryDb(`[sp_DirectTeam]'${userid}'`);
-    obj.directTeam = data["recordsets"];
-    res.send({ directTeam: data["recordsets"] });
+    const { userid } = req.params;
+    if (!userid.length) res.status(400).send({ error: "requires user id" });
+    else {
+      const request = new sql.Request();
+      const { recordsets = [] } = await queryDb(`[sp_DirectTeam]'${userid}'`);
+      res.send({ directTeam: recordsets });
+    }
   } catch (e) {
     console.log(e.message);
     pool.close;
     sql.close;
-    obj.directTeam = err;
+    res.status(500).send({ error: e.message });
   }
 });
 
