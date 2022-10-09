@@ -12,6 +12,7 @@ const config = {
   password: "Mcareliv@0",
   server: "103.73.189.179",
   database: "soliduscoin",
+  requestTimeout: 300000,
   options: {
     encrypt: false,
     trustServerCertificate: true,
@@ -358,6 +359,7 @@ app.get("/api/Team/:userid", async (req, res) => {
     console.log(e.message);
     pool.close;
     sql.close;
+    res.status(500).send({ error: e.message });
   }
 });
 
