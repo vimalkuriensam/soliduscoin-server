@@ -338,13 +338,11 @@ app.get("/api/roiincome/:userid", async (req, res) => {
     const userid = req.params.userid;
     const request = new sql.Request();
     const data = await queryDb(`[sp_RoiIncome]'${userid}'`);
-    obj.roiincome = data["recordsets"];
     res.send({ roiincome: data["recordsets"] });
   } catch (e) {
-    console.log(e.message);
     pool.close;
     sql.close;
-    obj.roiincome = err;
+    res.status(500).send({ error: e.message });
   }
 });
 
@@ -360,7 +358,6 @@ app.get("/api/Team/:userid", async (req, res) => {
     console.log(e.message);
     pool.close;
     sql.close;
-    obj.allTeam = err;
   }
 });
 
